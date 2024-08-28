@@ -3,6 +3,7 @@ const oscTypes = {
     sine: { index: 1, name: "Sine" },
     square: { index: 2, name: "square"},
     triangle: { index: 3, name: "triangle"},
+    pseudo_sine: { index: 4, name: "pseudo_sine"},
 }
 
 const filterTypes = {
