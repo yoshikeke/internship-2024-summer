@@ -2,6 +2,7 @@ const oscTypes = {
     sawtooth: { index: 0, name: "Sawtooth" },
     sine: { index: 1, name: "Sine" },
     square: { index: 2, name: "square"},
+    triangle: { index: 3, name: "triangle"},
 }
 
 const filterTypes = {
