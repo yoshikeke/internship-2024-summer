@@ -9,6 +9,7 @@ const oscTypes = {
 const filterTypes = {
     bypass: { index: 0, name: "Bypass" },
     lowpass: { index: 1, name: "LowPass" },
+    highpass: { index: 2, name: "highPass"},
 }
 
 const parameters = {
