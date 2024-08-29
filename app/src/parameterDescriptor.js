@@ -11,6 +11,7 @@ const filterTypes = {
     lowpass: { index: 1, name: "LowPass" },
     highpass: { index: 2, name: "highPass"},
     bandpass: { index: 3, name: "bandPass"},
+    bandstop: { index: 4, name: "bandStop"},
 }
 
 const parameters = {
