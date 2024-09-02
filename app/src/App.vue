@@ -3,7 +3,8 @@ import OscillatorUI from './components/OscillatorUI.vue';
 import FilterUI from './components/FilterUI.vue';
 import AmpUI from './components/AmpUI.vue';
 import WaveDisplay from './components/WaveDisplay.vue';
-import parameterDescriptor from "./parameterDescriptor.js"
+import parameterDescriptor from "./parameterDescriptor.js";
+import SpectrumAnalyzer from './components/spectrum_analyzer.vue';
 </script>
 
 <template>
@@ -27,6 +28,9 @@ import parameterDescriptor from "./parameterDescriptor.js"
       </div>
       <div>
         <WaveDisplay ref="wave" :analyser="analyser" />
+      </div>
+      <div>
+        <SpectrumAnalyzer ref="spectrum" :analyser="analyser" />
       </div>
       <div>
         <OscillatorUI @parameterChanged="onParameterChanged" />
@@ -96,6 +100,7 @@ export default {
     },
     draw() {
       this.$refs.wave.drawWave()
+      this.$refs.spectrum.drawWave()
     }
   },
 }
