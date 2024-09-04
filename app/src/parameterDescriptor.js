@@ -57,6 +57,27 @@ const parameters = {
         minValue: 0,
         maxValue: 1,
     },
+    delayTime: {
+        id: 6,
+        name: "DelayTime",
+        defaultValue: 0.5,
+        minValue: 0,
+        maxValue: 1,
+    },
+    feedback: {
+        id: 7,
+        name: "Feedback",
+        defaultValue: 0.5,
+        minValue: 0,
+        maxValue: 1,
+    },
+    delayMix: {
+        id: 8,
+        name: "DelayMix",
+        defaultValue: 0.5,
+        minValue: 0,
+        maxValue: 1,
+    }
 }
 
 export default {

@@ -5,6 +5,8 @@ import AmpUI from './components/AmpUI.vue';
 import WaveDisplay from './components/WaveDisplay.vue';
 import parameterDescriptor from "./parameterDescriptor.js";
 import SpectrumAnalyzer from './components/spectrum_analyzer.vue';
+
+import DelayUI from './components/DelayUI.vue';
 </script>
 
 <template>
@@ -36,6 +38,8 @@ import SpectrumAnalyzer from './components/spectrum_analyzer.vue';
         <OscillatorUI @parameterChanged="onParameterChanged" />
         <FilterUI @parameterChanged="onParameterChanged" />
         <AmpUI @parameterChanged="onParameterChanged" />
+
+        <delayUI />
       </div>
     </div>
   </div>
