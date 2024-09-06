@@ -71,7 +71,6 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
         return true;
     }
     processDistortion(buffer){
-        console.log(this.distortion);
         for(let i = 0; i < buffer.length; ++i){
             if(Math.abs(buffer[i]) > this.distortion){
                 if(buffer[i] > 0){
