@@ -12,6 +12,7 @@ import parameterDescriptor from "../parameterDescriptor.js";
                 :max="params.delayTime.maxValue"
                 step="0.01"
                 v-model="delayTime"
+                @input ="delayTimeChanged"
             >
             <h5>{{ delayTime }}</h5>
         </div>
@@ -23,6 +24,7 @@ import parameterDescriptor from "../parameterDescriptor.js";
                 :max="params.feedback.maxValue"
                 step="0.01"
                 v-model="feedback"
+                @input ="feedbackChanged"
             >
             <h5>{{ feedback }}</h5>
         </div>
@@ -34,6 +36,7 @@ import parameterDescriptor from "../parameterDescriptor.js";
                 :max="params.delayMix.maxValue"
                 step="0.01"
                 v-model="delayMix"
+                @input ="delayMixChanged"
             >
             <h5>{{ delayMix }}</h5>
         </div>
@@ -43,6 +46,7 @@ import parameterDescriptor from "../parameterDescriptor.js";
 <script>
 export default {
     name: "DelayUI",
+    emit: ["parameterChanged"],
     data() {
         return {
           params: parameterDescriptor.parameters,
@@ -53,7 +57,23 @@ export default {
         };
     },
     methods: {
-        // 必要なメソッドをここに追加
+        delayTimeChanged(){
+            const param = { id: this.params.delayTime.id, value: this.delayTime }
+            this.$emit("parameterChanged", param)
+            console.log("delayTimeChanged")
+        },
+        feedbackChanged(){
+            const param = { id: this.params.feedback.id, value: this.feedback }
+            this.$emit("parameterChanged", param)
+            console.log("feedbackChanged")
+        },
+        delayMixChanged(){
+            const param = { id: this.params.delayMix.id, value: this.delayMix }
+            this.$emit("parameterChanged", param)
+            console.log("delayMixChanged")
+        }
     }
 };
 </script>
+
+<style scoped></style>

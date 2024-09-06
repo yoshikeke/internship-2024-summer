@@ -77,7 +77,15 @@ const parameters = {
         defaultValue: 0.5,
         minValue: 0,
         maxValue: 1,
+    },
+    distortion:{
+        id: 9,
+        name: "Distortion",
+        defaultValue: 1,
+        minValue: 0.1,
+        maxValue: 1,
     }
+    
 }
 
 export default {

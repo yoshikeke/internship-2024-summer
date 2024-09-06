@@ -35,6 +35,19 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
         this.volume = this.convertVolume(parseFloat(this.params.volume.defaultValue));
         this.iVolume = this.volume; /* Interpolated Volume */
 
+        /* Delay */
+        this.sampleRate = parseFloat(options.processorOptions.sampleRate);
+        this.maxDelayTime = 5.0;  // 最大5秒のディレイ
+        this.delayBuffer = new Float32Array(this.sampleRate * this.maxDelayTime);
+        this.delayIndex = 0;
+        this.delayTime = 1.0;  // デフォルトのディレイタイム（秒）
+        this.feedback = 0.5;   // デフォルトのフィードバック量
+        this.mix = 0.5;  
+        
+        /* Distortion */
+        this.distortion = this.params.distortion.defaultValue;
+        this.iDistortion = this.distortion;
+
         this.port.onmessage = (event) => {
             const data = event.data;
             if (data.type == "noteOn") {
@@ -45,12 +58,31 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
             }
         };
     }
+
+    
+
     process(inputs, outputs, parameters) {
         let output = outputs[0][0];
         this.processOscillator(output);
         this.processFilter(output);
+        this.processDistortion(output);
+        // this.processDelay(output);
         this.processAmp(output);
         return true;
+    }
+    processDistortion(buffer){
+        console.log(this.distortion);
+        for(let i = 0; i < buffer.length; ++i){
+            if(Math.abs(buffer[i]) > this.distortion){
+                if(buffer[i] > 0){
+                    buffer[i] = this.distortion;
+                    buffer[i] /= this.distortion;
+                }else{
+                    buffer[i] = -this.distortion;
+                    buffer[i] /= this.distortion;
+                }
+            }
+        }
     }
     processOscillator(buffer) {
         switch (this.oscType) {
@@ -117,6 +149,7 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
         }
     }
     processAmp(buffer) {
+        
         if (this.noteOn) {
             for (let i = 0; i < buffer.length; ++i) {
                 this.iVolume += (this.volume - this.iVolume) * (1.0 - this.interpolation);
@@ -195,6 +228,32 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
                 break;
         }
     }
+    
+    processDelay(buffer){
+        console.log("processDelay");
+        console.log(this.delayIndex);
+        console.log(this.mix);
+        console.log(this.feedback);
+        // ディレイタイムをサンプル数に変換
+        let delayTimeInSamples = Math.round(this.delayTime * this.sampleRate);
+
+        for (let i = 0; i < buffer.length; ++i) {
+            // 現在のサンプルを取得
+            let inputSample = buffer[i];
+
+            // ディレイされたサンプルを取得
+            let delayedSample = this.delayBuffer[this.delayIndex];
+
+            // ディレイされたサンプルと元のサンプルをミックス
+            buffer[i] = inputSample * (1.0 - this.mix) + delayedSample * this.mix;
+
+            // フィードバックを適用してディレイバッファに書き込む
+            this.delayBuffer[this.delayIndex] = inputSample + delayedSample * this.feedback;
+
+            // ディレイバッファ内のインデックスを更新
+            this.delayIndex = (this.delayIndex + 1) % delayTimeInSamples;
+        }
+    }
     setParameter(parameter) {
         switch (parameter.id) {
             case this.params.oscType.id:
@@ -218,6 +277,18 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
                 break;
             case this.params.volume.id:
                 this.volume = this.convertVolume(parseFloat(parameter.value));
+                break;
+            case this.params.delayTime.id:
+                this.delayTime = parseFloat(parameter.value);
+                break;
+            case this.params.feedback.id:
+                this.feedback = parseFloat(parameter.value);
+                break;
+            case this.params.delayMix.id:
+                this.mix = parseFloat(parameter.value);
+                break;
+            case this.params.distortion.id:
+                this.distortion = parseFloat(parameter.value);
                 break;
             default:
                 break;
