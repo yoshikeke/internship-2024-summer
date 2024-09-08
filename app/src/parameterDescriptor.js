@@ -13,11 +13,7 @@ const filterTypes = {
     bandpass: { index: 3, name: "bandPass"},
     bandstop: { index: 4, name: "bandStop"},
 }
-const lfoTypes = {
-    bypass: { index: 0, name: "Bypass"},
-    saqtooth: { index: 1, name: "Sawtooth"},
-    sine: { index: 2, name: "Sine"},
-}
+                                         
 
 const parameters = {
     oscType: {
@@ -90,9 +86,9 @@ const parameters = {
         minValue: 0.1,
         maxValue: 1,
     },
-    lfoRate:{
+    tremoroRate:{
         id: 10,
-        name: "LfoRate",
+        name: "tremoroRate",
         defaultValue: 0,
         minValue: 0,
         maxValue: 120,
@@ -104,6 +100,5 @@ const parameters = {
 export default {
     oscTypes,
     filterTypes,
-    lfoTypes,
     parameters,
 }

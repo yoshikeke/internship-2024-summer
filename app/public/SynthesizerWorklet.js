@@ -305,7 +305,7 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
             case this.params.distortion.id:
                 this.distortion = parseFloat(parameter.value);
                 break;
-            case this.params.lfoRate.id:
+            case this.params.tremoroRate.id:
                 this.tremoroRate = parseFloat(parameter.value);
                 break;
             default:
