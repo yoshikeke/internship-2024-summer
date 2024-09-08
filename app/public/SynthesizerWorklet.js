@@ -47,10 +47,10 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
         /* Distortion */
         this.distortion = this.params.distortion.defaultValue;
         
-        /* LFO */
+        /* Tremoro */
      
-        this.lfoRate = 0; // LFOの周波数 
-        this.lfoPhase = 0;     // LFOの位相
+        this.tremoroRate = 0; // LFOの周波数 
+        this.tremoroPhase = 0;     // LFOの位相
         this.sampleRate = sampleRate; // オーディオコンテキストのサンプルレート
 
         this.port.onmessage = (event) => {
@@ -65,11 +65,10 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
     }
     process(inputs, outputs, parameters) {
         let output = outputs[0][0];
-        let lfo = outputs[0][0];
         this.processOscillator(output);
         this.processFilter(output);
         this.processDistortion(output);
-        this.processLfo(output,lfo);
+        this.processTremoro(output);
         // this.processDelay(output);
         this.processAmp(output);
         return true;
@@ -95,18 +94,18 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
             this.delayIndex = (this.delayIndex + 1) % delayTimeInSamples;
         }
     }
-    processLfo(buffer){
+    processTremoro(buffer){
         for (let i = 0; i < buffer.length; i++) {
             // LFOの計算
-            const lfoValue = Math.sin(2 * Math.PI * this.lfoRate * this.lfoPhase / this.sampleRate);
+            const tremoroValue = Math.sin(2 * Math.PI * this.tremoroRate * this.tremoroPhase / this.sampleRate);
             
             // トレモロ効果: 入力信号にLFOをかける
-            buffer[i] = buffer[i] * (0.5 * (lfoValue + 1));  // 振幅をLFOでモジュレート
+            buffer[i] = buffer[i] * (0.5 * (tremoroValue + 1));  // 振幅をLFOでモジュレート
             
             // LFOの位相を更新
-            this.lfoPhase += 1;
-            if (this.lfoPhase >= this.sampleRate / this.lfoRate) {
-                this.lfoPhase = 0;
+            this.tremoroPhase += 1;
+            if (this.tremoroPhase >= this.sampleRate / this.tremoroRate) {
+                this.tremoroPhase = 0;
             }
         }
     }
@@ -307,7 +306,7 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
                 this.distortion = parseFloat(parameter.value);
                 break;
             case this.params.lfoRate.id:
-                this.lfoRate = parseFloat(parameter.value);
+                this.tremoroRate = parseFloat(parameter.value);
                 break;
             default:
                 break;
