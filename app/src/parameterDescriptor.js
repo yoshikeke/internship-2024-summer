@@ -93,6 +93,20 @@ const parameters = {
         minValue: 0,
         maxValue: 120,
     },
+    vibratoRate:{
+        id: 11,
+        name: "vibratoRate",
+        defaultValue: 0,
+        minValue: 0,
+        maxValue: 120,
+    },
+    vibratoDepth:{
+        id: 12,
+        name: "vibratoDepth",
+        defaultValue: 0,
+        minValue: 0,
+        maxValue: 1,
+    }
     
     
 }
