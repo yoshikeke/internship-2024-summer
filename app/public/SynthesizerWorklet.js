@@ -46,7 +46,12 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
         
         /* Distortion */
         this.distortion = this.params.distortion.defaultValue;
-        this.iDistortion = this.distortion;
+        
+        /* LFO */
+     
+        this.lfoRate = 0; // LFOの周波数 
+        this.lfoPhase = 0;     // LFOの位相
+        this.sampleRate = sampleRate; // オーディオコンテキストのサンプルレート
 
         this.port.onmessage = (event) => {
             const data = event.data;
@@ -58,18 +63,54 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
             }
         };
     }
-
-    
-
     process(inputs, outputs, parameters) {
         let output = outputs[0][0];
+        let lfo = outputs[0][0];
         this.processOscillator(output);
         this.processFilter(output);
         this.processDistortion(output);
+        this.processLfo(output,lfo);
         // this.processDelay(output);
         this.processAmp(output);
         return true;
     }
+    processDelay(buffer){
+        // ディレイタイムをサンプル数に変換
+        let delayTimeInSamples = Math.round(this.delayTime * this.sampleRate);
+
+        for (let i = 0; i < buffer.length; ++i) {
+            // 現在のサンプルを取得
+            let inputSample = buffer[i];
+
+            // ディレイされたサンプルを取得
+            let delayedSample = this.delayBuffer[this.delayIndex];
+
+            // ディレイされたサンプルと元のサンプルをミックス
+            buffer[i] = inputSample * (1.0 - this.mix) + delayedSample * this.mix;
+
+            // フィードバックを適用してディレイバッファに書き込む
+            this.delayBuffer[this.delayIndex] = inputSample + delayedSample * this.feedback;
+
+            // ディレイバッファ内のインデックスを更新
+            this.delayIndex = (this.delayIndex + 1) % delayTimeInSamples;
+        }
+    }
+    processLfo(buffer){
+        for (let i = 0; i < buffer.length; i++) {
+            // LFOの計算
+            const lfoValue = Math.sin(2 * Math.PI * this.lfoRate * this.lfoPhase / this.sampleRate);
+            
+            // トレモロ効果: 入力信号にLFOをかける
+            buffer[i] = buffer[i] * (0.5 * (lfoValue + 1));  // 振幅をLFOでモジュレート
+            
+            // LFOの位相を更新
+            this.lfoPhase += 1;
+            if (this.lfoPhase >= this.sampleRate / this.lfoRate) {
+                this.lfoPhase = 0;
+            }
+        }
+    }
+    
     processDistortion(buffer){
         for(let i = 0; i < buffer.length; ++i){
             if(Math.abs(buffer[i]) > this.distortion){
@@ -86,11 +127,11 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
     processOscillator(buffer) {
         switch (this.oscType) {
             case this.desc.oscTypes.sawtooth.index:
-                console.log("sawtooth");
+                
                 this.generateSawtooth(buffer);
                 break;
             case this.desc.oscTypes.square.index:
-                console.log("square");
+                
                 this.generateSawtooth(buffer);
                 for (let i = 0; i < buffer.length; ++i){
                     if(buffer[i] < 0){
@@ -101,14 +142,14 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
                 }
                 break;
             case this.desc.oscTypes.sine.index:
-                console.log("sine");
+                
                 this.generateSawtooth(buffer);
                 for (let i = 0; i < buffer.length; ++i) {
                     buffer[i] = Math.cos(Math.PI * buffer[i]);
                 }
                 break;
             case this.desc.oscTypes.triangle.index:
-                console.log("triangle");
+                
                 this.generateSawtooth(buffer);
                 for (let i = 0; i < buffer.length; ++i) {
                     if(buffer[i] < 0){
@@ -118,7 +159,7 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
                 }
                 break;
             case this.desc.oscTypes.pseudo_sine.index:
-                console.log("pseudo_sine");
+                
                 this.generateSawtooth(buffer);
                 for (let i = 0; i < buffer.length; ++i) {
                     buffer[i] = buffer[i] * 4 * (Math.abs(buffer[i]) - 1);
@@ -228,31 +269,7 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
         }
     }
     
-    processDelay(buffer){
-        console.log("processDelay");
-        console.log(this.delayIndex);
-        console.log(this.mix);
-        console.log(this.feedback);
-        // ディレイタイムをサンプル数に変換
-        let delayTimeInSamples = Math.round(this.delayTime * this.sampleRate);
-
-        for (let i = 0; i < buffer.length; ++i) {
-            // 現在のサンプルを取得
-            let inputSample = buffer[i];
-
-            // ディレイされたサンプルを取得
-            let delayedSample = this.delayBuffer[this.delayIndex];
-
-            // ディレイされたサンプルと元のサンプルをミックス
-            buffer[i] = inputSample * (1.0 - this.mix) + delayedSample * this.mix;
-
-            // フィードバックを適用してディレイバッファに書き込む
-            this.delayBuffer[this.delayIndex] = inputSample + delayedSample * this.feedback;
-
-            // ディレイバッファ内のインデックスを更新
-            this.delayIndex = (this.delayIndex + 1) % delayTimeInSamples;
-        }
-    }
+    
     setParameter(parameter) {
         switch (parameter.id) {
             case this.params.oscType.id:
@@ -288,6 +305,9 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
                 break;
             case this.params.distortion.id:
                 this.distortion = parseFloat(parameter.value);
+                break;
+            case this.params.lfoRate.id:
+                this.lfoRate = parseFloat(parameter.value);
                 break;
             default:
                 break;
