@@ -36,22 +36,23 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
         this.iVolume = this.volume; /* Interpolated Volume */
 
         /* Delay */
-        this.sampleRate = parseFloat(options.processorOptions.sampleRate);
-        this.maxDelayTime = 5.0;  // 最大5秒のディレイ
-        this.delayBuffer = new Float32Array(this.sampleRate * this.maxDelayTime);
-        this.delayIndex = 0;
-        this.delayTime = 1.0;  // デフォルトのディレイタイム（秒）
-        this.feedback = 0.5;   // デフォルトのフィードバック量
-        this.mix = 0.5;  
+        this.delayTime = 0;  // デフォルトのディレイタイム（秒）
+        this.feedback = 0;   // デフォルトのフィードバック量　１のときに100％
+        this.delayMix = 0;   // １のときにディレイ音しか聞こえない
         
         /* Distortion */
         this.distortion = this.params.distortion.defaultValue;
         
         /* Tremoro */
-     
         this.tremoroRate = 0; // LFOの周波数 
         this.tremoroPhase = 0;     // LFOの位相
         this.sampleRate = sampleRate; // オーディオコンテキストのサンプルレート
+
+        /* Vibrato */
+        this.vibratoRate = 0;
+        this.vibratoDepth = 0;
+        this.vibratoPhase = 0;
+
 
         this.port.onmessage = (event) => {
             const data = event.data;
@@ -69,40 +70,55 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
         this.processFilter(output);
         this.processDistortion(output);
         this.processTremoro(output);
-        // this.processDelay(output);
+        this.processVibrato(output);
+        this.processDelay(output);
         this.processAmp(output);
         return true;
     }
-    processDelay(buffer){
-        // ディレイタイムをサンプル数に変換
-        let delayTimeInSamples = Math.round(this.delayTime * this.sampleRate);
-
-        for (let i = 0; i < buffer.length; ++i) {
-            // 現在のサンプルを取得
-            let inputSample = buffer[i];
-
-            // ディレイされたサンプルを取得
-            let delayedSample = this.delayBuffer[this.delayIndex];
-
-            // ディレイされたサンプルと元のサンプルをミックス
-            buffer[i] = inputSample * (1.0 - this.mix) + delayedSample * this.mix;
-
-            // フィードバックを適用してディレイバッファに書き込む
-            this.delayBuffer[this.delayIndex] = inputSample + delayedSample * this.feedback;
-
-            // ディレイバッファ内のインデックスを更新
-            this.delayIndex = (this.delayIndex + 1) % delayTimeInSamples;
+    processVibrato(buffer) {
+        for (let i = 0; i < buffer.length; i++) {
+            const vibratoLFO = Math.sin(2 * Math.PI * this.vibratoRate * this.vibratoPhase / this.sampleRate);
+            const pitchModulation = 1.0 + this.vibratoDepth * vibratoLFO;
+            this.iFrequency = this.frequency * pitchModulation;
+            buffer[i] = buffer[i] * pitchModulation;
+            this.vibratoPhase += 1;
+            if (this.vibratoPhase >= this.sampleRate / this.vibratoRate) {
+                this.vibratoPhase = 0;
+            }
         }
     }
+    processDelay(buffer) {
+        // 初回実行時にディレイバッファを作成
+        if (!this.delayBuffer) {
+            this.delayBuffer = new Float32Array(this.sampleRate * 5); // 5秒分のディレイバッファ
+            this.delayBufferIndex = 0; // バッファのインデックスを初期化
+        }
+    
+        for (let i = 0; i < buffer.length; i++) {
+            // 現在のバッファ位置に対応するディレイバッファの位置を計算
+            const delaySamples = Math.floor(this.delayTime * this.sampleRate);
+            const delayIndex = (this.delayBufferIndex - delaySamples + this.delayBuffer.length) % this.delayBuffer.length;
+    
+            // ディレイされた信号と現在の信号をミックス
+            const delayedSample = this.delayBuffer[delayIndex];
+            const wetSignal = delayedSample * this.feedback;
+            const drySignal = buffer[i];
+    
+            // 最終出力を計算
+            buffer[i] = (drySignal * (1 - this.delayMix)) + (wetSignal * this.delayMix);
+    
+            // ディレイバッファを更新
+            this.delayBuffer[this.delayBufferIndex] = drySignal + wetSignal;
+    
+            // インデックスを次に進める
+            this.delayBufferIndex = (this.delayBufferIndex + 1) % this.delayBuffer.length;
+        }
+    }
+    
     processTremoro(buffer){
         for (let i = 0; i < buffer.length; i++) {
-            // LFOの計算
             const tremoroValue = Math.sin(2 * Math.PI * this.tremoroRate * this.tremoroPhase / this.sampleRate);
-            
-            // トレモロ効果: 入力信号にLFOをかける
-            buffer[i] = buffer[i] * (0.5 * (tremoroValue + 1));  // 振幅をLFOでモジュレート
-            
-            // LFOの位相を更新
+            buffer[i] = buffer[i] * (0.5 * (tremoroValue + 1));  
             this.tremoroPhase += 1;
             if (this.tremoroPhase >= this.sampleRate / this.tremoroRate) {
                 this.tremoroPhase = 0;
@@ -300,13 +316,19 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
                 this.feedback = parseFloat(parameter.value);
                 break;
             case this.params.delayMix.id:
-                this.mix = parseFloat(parameter.value);
+                this.delayMix = parseFloat(parameter.value);
                 break;
             case this.params.distortion.id:
                 this.distortion = parseFloat(parameter.value);
                 break;
             case this.params.tremoroRate.id:
                 this.tremoroRate = parseFloat(parameter.value);
+                break;
+            case this.params.vibratoRate.id:
+                this.vibratoRate = parseFloat(parameter.value);
+                break;
+            case this.params.vibratoDepth.id:
+                this.vibratoDepth = parseFloat(parameter.value);
                 break;
             default:
                 break;

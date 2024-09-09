@@ -40,13 +40,10 @@ import DelayUI from './components/DelayUI.vue';
         <OscillatorUI @parameterChanged="onParameterChanged" />
         <DistortionUI @parameterChanged="onParameterChanged" />
         <TremoroUI @parameterChanged="onParameterChanged"/>
-        
         <vibratoUI @parameterChanged="onParameterChanged" />
         <FilterUI @parameterChanged="onParameterChanged" />
-        
+        <DelayUI @parameterChanged="onParameterChanged" />
         <AmpUI @parameterChanged="onParameterChanged" />
-        
-        
       </div>
     </div>
   </div>

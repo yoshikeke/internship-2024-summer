@@ -60,17 +60,14 @@ export default {
         delayTimeChanged(){
             const param = { id: this.params.delayTime.id, value: this.delayTime }
             this.$emit("parameterChanged", param)
-            console.log("delayTimeChanged")
         },
         feedbackChanged(){
             const param = { id: this.params.feedback.id, value: this.feedback }
             this.$emit("parameterChanged", param)
-            console.log("feedbackChanged")
         },
         delayMixChanged(){
             const param = { id: this.params.delayMix.id, value: this.delayMix }
             this.$emit("parameterChanged", param)
-            console.log("delayMixChanged")
         }
     }
 };

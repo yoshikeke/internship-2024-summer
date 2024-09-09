@@ -63,7 +63,7 @@ const parameters = {
         name: "DelayTime",
         defaultValue: 0.5,
         minValue: 0,
-        maxValue: 1,
+        maxValue: 5,
     },
     feedback: {
         id: 7,
