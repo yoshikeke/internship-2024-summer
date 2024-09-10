@@ -67,11 +67,11 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
     process(inputs, outputs, parameters) {
         let output = outputs[0][0];
         this.processOscillator(output);
-        this.processFilter(output);
         this.processDistortion(output);
         this.processTremoro(output);
         this.processVibrato(output);
         this.processDelay(output);
+        this.processFilter(output);
         this.processAmp(output);
         return true;
     }

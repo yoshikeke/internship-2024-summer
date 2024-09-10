@@ -41,8 +41,8 @@ import DelayUI from './components/DelayUI.vue';
         <DistortionUI @parameterChanged="onParameterChanged" />
         <TremoroUI @parameterChanged="onParameterChanged"/>
         <vibratoUI @parameterChanged="onParameterChanged" />
-        <FilterUI @parameterChanged="onParameterChanged" />
         <DelayUI @parameterChanged="onParameterChanged" />
+        <FilterUI @parameterChanged="onParameterChanged" />
         <AmpUI @parameterChanged="onParameterChanged" />
       </div>
     </div>

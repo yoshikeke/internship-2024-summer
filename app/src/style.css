@@ -35,7 +35,9 @@
 .section {
   display: flex;
 }
-
+.vibratoUI{
+  display: flex;
+}
 .param {
   width: 12em;
   padding: 0em;
