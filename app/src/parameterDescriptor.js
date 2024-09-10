@@ -4,6 +4,7 @@ const oscTypes = {
     square: { index: 2, name: "square"},
     triangle: { index: 3, name: "triangle"},
     pseudo_sine: { index: 4, name: "pseudo_sine"},
+    polyblep: { index: 5,name: "polyblep"},
 }
 
 const filterTypes = {

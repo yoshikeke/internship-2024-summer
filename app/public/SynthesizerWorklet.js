@@ -141,6 +141,10 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
     }
     processOscillator(buffer) {
         switch (this.oscType) {
+            case this.desc.oscTypes.polyblep.index:
+                this.generateSawtooth(buffer);
+                
+                break;
             case this.desc.oscTypes.sawtooth.index:
                 
                 this.generateSawtooth(buffer);
@@ -157,7 +161,6 @@ class SynthesizerWorklet extends AudioWorkletProcessor {
                 }
                 break;
             case this.desc.oscTypes.sine.index:
-                
                 this.generateSawtooth(buffer);
                 for (let i = 0; i < buffer.length; ++i) {
                     buffer[i] = Math.cos(Math.PI * buffer[i]);

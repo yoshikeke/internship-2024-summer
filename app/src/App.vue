@@ -9,6 +9,7 @@ import DistortionUI from './components/DistortionUI.vue';
 import TremoroUI from './components/LfoUI.vue'; 
 import VibratoUI from './components/VibratoUI.vue';
 import DelayUI from './components/DelayUI.vue';
+import MidiHandler from './MidiHandler.js';
 </script>
 
 <template>
@@ -22,7 +23,7 @@ import DelayUI from './components/DelayUI.vue';
       </h2>
     </div>
     <div>
-      <button id="start-button" v-show="!isStarted" @click="setupWorklet">
+      <button id="start-button" v-show="!isStarted" @click="setup">
         start
       </button>
     </div>
@@ -64,6 +65,38 @@ export default {
     }
   },
   methods: {
+    setup(){
+      
+      this.setupWorklet();
+      this.setupMidi();
+    },
+    setupMidi() {
+      MidiHandler.init();
+      MidiHandler.setHandleMidiCallback(this.processMidiMessage)
+    },
+    processMidiMessage(message) {
+      
+      console.log(message.data);
+      const  [status, data1, data2] = message.data;
+      switch(status){
+        case 144:
+          this.noteOn();
+          const freq = 440 * 2 ** ((data1-69) / 12);
+          const msg = {
+            id: this.params.frequency.id,
+            value: freq
+          };
+          this.onParameterChanged(msg);
+          break;
+        case 128:
+          this.noteOff();
+          break;
+      
+      }
+      
+      
+        
+    },
     setupWorklet() {
       console.log("start")
       this.isStarted = true
@@ -109,7 +142,10 @@ export default {
     draw() {
       this.$refs.wave.drawWave()
       this.$refs.spectrum.drawWave()
-    }
+    },
+   
+
+
   },
 }
 </script>
