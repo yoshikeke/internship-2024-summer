@@ -113,7 +113,7 @@ export default {
         numberOfOutputs: 1,
         outputChannelCount: [1]
       }
-      context.audioWorklet.addModule('/SynthesizerWorklet.js').then(() => {
+      context.audioWorklet.addModule('./SynthesizerWorklet.js').then(() => {
         this.synthesizer = new AudioWorkletNode(context, 'synthesizer-worklet', options)
 
         console.log(this.synthesizer)
